@@ -61,6 +61,7 @@ async function cursorRequest<T>(
       if (method === "POST") {
         headers["Content-Type"] = "application/json";
         headers.Origin = "https://cursor.com";
+        headers.Referer = "https://cursor.com/dashboard/usage";
       }
 
       const res = await fetch(url, {

@@ -15,6 +15,7 @@ import {
   buildDailySeriesFromEvents,
   buildModelSlicesFromEvents,
   fetchUsageEvents,
+  recentEventsForDisplay,
 } from "@/lib/usageEvents";
 
 interface FetchOptions {
@@ -139,6 +140,7 @@ export async function fetchDashboardData(
     daily,
     models,
     usageEventsCount: events.length,
+    recentEvents: recentEventsForDisplay(events),
     fetchedAt: new Date().toISOString(),
   };
 }

@@ -14,7 +14,21 @@ All dashboard numbers come from **live Cursor APIs** (session cookie). There is 
 | --- | --- |
 | `GET /api/usage-summary` | Plan, billing cycle, percentages, token breakdown |
 | `GET /api/auth/me` | Logged-in user (name, email, numeric `id`) |
-| `POST /api/dashboard/get-filtered-usage-events` | Paginated usage events → **daily charts** and **model pie** |
+| `POST /api/dashboard/get-filtered-usage-events` | Paginated usage events (same as dashboard Usage page) → charts, model pie, activity table |
+
+Example body (matches cursor.com/dashboard/usage):
+
+```json
+{
+  "teamId": 0,
+  "startDate": "1778869800000",
+  "endDate": "1779474599999",
+  "page": 1,
+  "pageSize": 100
+}
+```
+
+Optional: `userId` (numeric) to filter one member; `CURSOR_TEAM_ID` in env (default `0`).
 | `GET /api/usage?user=<id>` | Legacy per-model totals (fallback only if events are empty) |
 
 Authentication: `Cookie: WorkosCursorSessionToken=…` on every request. POST calls also send `Origin: https://cursor.com`.

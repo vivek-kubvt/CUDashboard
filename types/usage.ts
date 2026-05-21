@@ -94,9 +94,21 @@ export interface CursorUsageEvent {
   tokenUsage?: CursorTokenUsage;
   owningUser?: string;
   owningTeam?: string;
+  cursorTokenFee?: number;
   chargedCents?: number;
   isChargeable?: boolean;
   isHeadless?: boolean;
+  serviceAccountId?: string;
+}
+
+/** POST body for cursor.com/api/dashboard/get-filtered-usage-events */
+export interface FilteredUsageEventsRequest {
+  teamId: number;
+  userId?: number;
+  startDate: string;
+  endDate: string;
+  page: number;
+  pageSize: number;
 }
 
 export interface FilteredUsageEventsResponse {
@@ -137,5 +149,7 @@ export interface DashboardData {
   daily: DailyUsagePoint[];
   models: ModelUsageSlice[];
   usageEventsCount: number;
+  /** Most recent usage events (newest first), capped for the UI table */
+  recentEvents: CursorUsageEvent[];
   fetchedAt: string;
 }

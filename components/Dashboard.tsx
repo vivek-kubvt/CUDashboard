@@ -17,6 +17,7 @@ import { ProgressUsageBar } from "@/components/ProgressUsageBar";
 import { UsagePieChart } from "@/components/UsagePieChart";
 import { DailyUsageChart } from "@/components/DailyUsageChart";
 import { RequestsBarChart } from "@/components/RequestsBarChart";
+import { RecentUsageEvents } from "@/components/RecentUsageEvents";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { ErrorState } from "@/components/ErrorState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -194,6 +195,11 @@ export function Dashboard({ initialData }: DashboardProps) {
               eventsCount={data.usageEventsCount}
             />
           </section>
+
+          <RecentUsageEvents
+            events={data.recentEvents}
+            totalCount={data.usageEventsCount}
+          />
 
           <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <UsagePieChart data={data.models} />
