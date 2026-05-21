@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatNumber } from "@/lib/utils";
+import { formatChartDay, formatNumber } from "@/lib/utils";
 import type { DailyUsagePoint } from "@/types/usage";
 
 interface DailyUsageChartProps {
@@ -23,7 +23,8 @@ export function DailyUsageChart({ data }: DailyUsageChartProps) {
       <CardHeader>
         <CardTitle>Daily Token Usage</CardTitle>
         <p className="text-xs text-muted-foreground">
-          Tokens consumed per day in the current cycle
+          Estimated daily split from cycle start through today (Cursor has no
+          per-day API)
         </p>
       </CardHeader>
       <CardContent className="h-72">
@@ -42,6 +43,7 @@ export function DailyUsageChart({ data }: DailyUsageChartProps) {
               axisLine={{ stroke: "hsl(220 14% 22%)" }}
               tickLine={false}
               minTickGap={20}
+              tickFormatter={formatChartDay}
             />
             <YAxis
               tick={{ fill: "hsl(220 8% 65%)", fontSize: 11 }}
@@ -58,6 +60,7 @@ export function DailyUsageChart({ data }: DailyUsageChartProps) {
                 color: "hsl(210 20% 96%)",
               }}
               labelStyle={{ color: "hsl(220 8% 75%)" }}
+              labelFormatter={formatChartDay}
               formatter={(v: number) => [`${formatNumber(v)} tokens`, "Tokens"]}
             />
             <Area

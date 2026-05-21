@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatNumber } from "@/lib/utils";
+import { formatChartDay, formatNumber } from "@/lib/utils";
 import type { DailyUsagePoint } from "@/types/usage";
 
 interface RequestsBarChartProps {
@@ -23,7 +23,7 @@ export function RequestsBarChart({ data }: RequestsBarChartProps) {
       <CardHeader>
         <CardTitle>Requests Over Time</CardTitle>
         <p className="text-xs text-muted-foreground">
-          API requests per day
+          Estimated requests per day through today in this billing cycle
         </p>
       </CardHeader>
       <CardContent className="h-72">
@@ -42,6 +42,7 @@ export function RequestsBarChart({ data }: RequestsBarChartProps) {
               axisLine={{ stroke: "hsl(220 14% 22%)" }}
               tickLine={false}
               minTickGap={20}
+              tickFormatter={formatChartDay}
             />
             <YAxis
               tick={{ fill: "hsl(220 8% 65%)", fontSize: 11 }}
@@ -58,6 +59,7 @@ export function RequestsBarChart({ data }: RequestsBarChartProps) {
                 color: "hsl(210 20% 96%)",
               }}
               labelStyle={{ color: "hsl(220 8% 75%)" }}
+              labelFormatter={formatChartDay}
               formatter={(v: number) => [`${formatNumber(v)} requests`, "Requests"]}
               cursor={{ fill: "hsla(220, 14%, 22%, 0.5)" }}
             />

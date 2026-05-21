@@ -21,6 +21,15 @@ export function formatDate(iso: string): string {
   });
 }
 
+/** `YYYY-MM-DD` → short label for chart axes (e.g. "May 22"). */
+export function formatChartDay(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
     day: "2-digit",

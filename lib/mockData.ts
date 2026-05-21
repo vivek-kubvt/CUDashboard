@@ -122,13 +122,35 @@ export function buildModelSlices(
   }));
 }
 
-export function buildDailySeries(start: string, end: string): DailyUsagePoint[] {
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  const days = Math.max(7, Math.min(31, Math.round((e - s) / 86_400_000)));
+/** UTC midnight for an ISO timestamp (billing cycle dates are UTC). */
+function utcDayStart(iso: string | Date): number {
+  const d = new Date(iso);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+/**
+ * Estimated per-day usage for charting. Cursor does not expose daily history;
+ * values are a illustrative split capped at today (not future cycle dates).
+ */
+export function buildDailySeries(
+  start: string,
+  end: string,
+  now: Date = new Date(),
+): DailyUsagePoint[] {
+  const cycleStart = utcDayStart(start);
+  const cycleEnd = utcDayStart(end);
+  const today = utcDayStart(now);
+  const rangeEnd = Math.min(cycleEnd, today);
+
+  if (rangeEnd < cycleStart) return [];
+
+  const spanDays = Math.floor((rangeEnd - cycleStart) / 86_400_000) + 1;
+  const days = Math.max(1, Math.min(31, spanDays));
   const out: DailyUsagePoint[] = [];
+
   for (let i = 0; i < days; i++) {
-    const d = new Date(s + i * 86_400_000);
+    const dayMs = cycleStart + i * 86_400_000;
+    const d = new Date(dayMs);
     const dow = d.getUTCDay();
     const weekend = dow === 0 || dow === 6;
     const base = 600 + Math.sin(i / 2) * 220 + (weekend ? -350 : 0);
