@@ -15,16 +15,21 @@ import type { DailyUsagePoint } from "@/types/usage";
 
 interface DailyUsageChartProps {
   data: DailyUsagePoint[];
+  eventsCount?: number;
 }
 
-export function DailyUsageChart({ data }: DailyUsageChartProps) {
+export function DailyUsageChart({ data, eventsCount = 0 }: DailyUsageChartProps) {
+  const hasUsage = data.some((d) => d.tokens > 0);
+  const totalTokens = data.reduce((s, d) => s + d.tokens, 0);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Daily Token Usage</CardTitle>
         <p className="text-xs text-muted-foreground">
-          Estimated daily split from cycle start through today (Cursor has no
-          per-day API)
+          {hasUsage
+            ? `Live data from ${eventsCount.toLocaleString()} Cursor usage events · ${totalTokens.toLocaleString()} tokens in cycle`
+            : "No usage events recorded in this billing period yet"}
         </p>
       </CardHeader>
       <CardContent className="h-72">

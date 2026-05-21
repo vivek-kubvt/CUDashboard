@@ -8,15 +8,16 @@ Built with **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, **shad
 
 ## Data sources
 
-The app fetches three Cursor endpoints (all session-cookie authenticated):
+All dashboard numbers come from **live Cursor APIs** (session cookie). There is **no mock or estimated data** when `CURSOR_SESSION_TOKEN` is set.
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET https://cursor.com/api/usage-summary` | Plan, billing cycle, percentages, breakdown |
-| `GET https://cursor.com/api/auth/me` | Logged-in user → resolves `user.id` for the next call |
-| `GET https://cursor.com/api/usage?user=<id>` | Per-model request/token counts |
+| `GET /api/usage-summary` | Plan, billing cycle, percentages, token breakdown |
+| `GET /api/auth/me` | Logged-in user (name, email, numeric `id`) |
+| `POST /api/dashboard/get-filtered-usage-events` | Paginated usage events → **daily charts** and **model pie** |
+| `GET /api/usage?user=<id>` | Legacy per-model totals (fallback only if events are empty) |
 
-All three are hit through `lib/fetchUsage.ts`, which sends a `Cookie: WorkosCursorSessionToken=…` header.
+Authentication: `Cookie: WorkosCursorSessionToken=…` on every request. POST calls also send `Origin: https://cursor.com`.
 
 ---
 
@@ -26,7 +27,7 @@ All three are hit through `lib/fetchUsage.ts`, which sends a `Cookie: WorkosCurs
 - Animated gradient progress bars: Total / API / Auto model
 - Recharts: daily token area chart, requests bar chart, model breakdown pie
 - Logged-in account shown in header (name + email from `/api/auth/me`)
-- `/api/usage` server route with retries, timeout, schema validation, mock fallback in dev
+- `/api/usage` server route with retries, timeout, and schema normalization
 - Auto-refresh every 5 minutes + manual refresh
 - Export JSON / download full-dashboard PNG (Playwright, same as CI)
 - Playwright screenshot → PNG artifact
@@ -57,7 +58,7 @@ GOOGLE_CHAT_WEBHOOK=https://chat.googleapis.com/v1/spaces/.../messages?key=...&t
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-If `CURSOR_SESSION_TOKEN` is empty, the dashboard renders the bundled mock fixtures (matches the real response shapes), useful for local UI work.
+`CURSOR_SESSION_TOKEN` is **required**. Without it the dashboard shows an error — there is no mock/demo mode.
 
 ---
 
@@ -136,9 +137,10 @@ npm run daily-report           # capture + send
 │   └── UsagePieChart.tsx
 ├── hooks/useUsage.ts             # client hook: fetch, refresh, auto-poll
 ├── lib/
-│   ├── fetchUsage.ts             # Cursor API client (3 endpoints) with retries, timeout, validation
+│   ├── cursorClient.ts           # Cookie auth GET/POST to cursor.com
+│   ├── fetchUsage.ts             # Aggregates summary + usage events into dashboard payload
+│   ├── usageEvents.ts            # Fetches & aggregates get-filtered-usage-events
 │   ├── googleChat.ts             # screenshot-only Google Chat card
-│   ├── mockData.ts               # sample summary / auth-me / usage-detail
 │   └── utils.ts
 ├── scripts/
 │   ├── capture.ts                # Playwright screenshot of dashboard
@@ -217,8 +219,11 @@ The group message is a single card with the dashboard PNG — no usage percentag
 
 ## Troubleshooting
 
-**Dashboard shows mock data**
-`CURSOR_SESSION_TOKEN` is empty. Set it in `.env.local` (dev) or as a GitHub/Vercel secret (prod).
+**Dashboard shows an error / won’t load**
+`CURSOR_SESSION_TOKEN` is missing or expired. Set it in `.env` (dev) or as a GitHub/Vercel secret (prod).
+
+**Charts are empty but summary cards work**
+No usage events in the current billing window, or `CURSOR_USER_ID` does not match the account that owns the events.
 
 **Cursor returns 401/403**
 The session cookie has expired. Sign back into cursor.com, copy a fresh `WorkosCursorSessionToken`, update the secret.

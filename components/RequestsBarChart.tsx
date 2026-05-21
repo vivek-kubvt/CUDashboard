@@ -15,15 +15,23 @@ import type { DailyUsagePoint } from "@/types/usage";
 
 interface RequestsBarChartProps {
   data: DailyUsagePoint[];
+  eventsCount?: number;
 }
 
-export function RequestsBarChart({ data }: RequestsBarChartProps) {
+export function RequestsBarChart({
+  data,
+  eventsCount = 0,
+}: RequestsBarChartProps) {
+  const totalRequests = data.reduce((s, d) => s + d.requests, 0);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Requests Over Time</CardTitle>
         <p className="text-xs text-muted-foreground">
-          Estimated requests per day through today in this billing cycle
+          {totalRequests > 0
+            ? `${totalRequests.toLocaleString()} API calls from ${eventsCount.toLocaleString()} Cursor usage events`
+            : "No requests in this billing period yet"}
         </p>
       </CardHeader>
       <CardContent className="h-72">

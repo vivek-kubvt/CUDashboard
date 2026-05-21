@@ -16,7 +16,9 @@ export function UsagePieChart({ data }: UsagePieChartProps) {
       <CardHeader>
         <CardTitle>Model Usage Breakdown</CardTitle>
         <p className="text-xs text-muted-foreground">
-          Tokens by model across the cycle
+          {total > 0
+            ? `${formatNumber(total)} tokens from live Cursor usage events`
+            : "No model usage in this billing period yet"}
         </p>
       </CardHeader>
       <CardContent className="h-72">

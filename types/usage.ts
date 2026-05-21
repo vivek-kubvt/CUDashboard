@@ -76,6 +76,34 @@ export interface CursorAuthMeResponse {
   timestamps: { createdAt: string; updatedAt: string };
 }
 
+export interface CursorTokenUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheWriteTokens?: number;
+  totalCents?: number;
+}
+
+export interface CursorUsageEvent {
+  timestamp: string;
+  model: string;
+  kind?: string;
+  requestsCosts?: number;
+  usageBasedCosts?: string;
+  isTokenBasedCall?: boolean;
+  tokenUsage?: CursorTokenUsage;
+  owningUser?: string;
+  owningTeam?: string;
+  chargedCents?: number;
+  isChargeable?: boolean;
+  isHeadless?: boolean;
+}
+
+export interface FilteredUsageEventsResponse {
+  totalUsageEventsCount: number;
+  usageEventsDisplay: CursorUsageEvent[];
+}
+
 export interface CursorModelUsage {
   numRequests: number;
   numRequestsTotal: number;
@@ -108,5 +136,6 @@ export interface DashboardData {
   detail: CursorUsageDetailResponse | null;
   daily: DailyUsagePoint[];
   models: ModelUsageSlice[];
+  usageEventsCount: number;
   fetchedAt: string;
 }

@@ -185,8 +185,14 @@ export function Dashboard({ initialData }: DashboardProps) {
           </section>
 
           <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <DailyUsageChart data={data.daily} />
-            <RequestsBarChart data={data.daily} />
+            <DailyUsageChart
+              data={data.daily}
+              eventsCount={data.usageEventsCount}
+            />
+            <RequestsBarChart
+              data={data.daily}
+              eventsCount={data.usageEventsCount}
+            />
           </section>
 
           <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
