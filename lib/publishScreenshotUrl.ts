@@ -133,7 +133,7 @@ async function uploadTransferSh(bytes: Buffer, filename: string): Promise<string
 
 async function upload0x0(bytes: Buffer, filename: string): Promise<string> {
   const form = new FormData();
-  form.append("file", new Blob([bytes], { type: "image/png" }), filename);
+  form.append("file", new Blob([new Uint8Array(bytes)], { type: "image/png" }), filename);
   const res = await fetch("https://0x0.st", {
     method: "POST",
     body: form,
@@ -154,7 +154,7 @@ async function uploadLitterbox(bytes: Buffer, filename: string): Promise<string>
   form.append("reqtype", "fileupload");
   form.append(
     "fileToUpload",
-    new Blob([bytes], { type: "image/png" }),
+    new Blob([new Uint8Array(bytes)], { type: "image/png" }),
     filename,
   );
   form.append("time", "24h");
