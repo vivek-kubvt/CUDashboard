@@ -9,15 +9,17 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CURSOR_SESSION_TOKEN: ${{ secrets.CURSOR_SESSION_TOKEN }}
+  CURSOR_USER_ID: ${{ secrets.CURSOR_USER_ID }}
+  GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+  NEXT_PUBLIC_BASE_URL: http://localhost:3000
+
 jobs:
   report:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      CURSOR_SESSION_TOKEN: ${{ secrets.CURSOR_SESSION_TOKEN }}
-      CURSOR_USER_ID: ${{ secrets.CURSOR_USER_ID }}
-      GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +27,20 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
+
+      - name: Verify required secrets
+        run: |
+          if [ -z "$CURSOR_SESSION_TOKEN" ]; then
+            echo "::error::Repository secret CURSOR_SESSION_TOKEN is missing."
+            exit 1
+          fi
+          if [ -z "$GOOGLE_CHAT_WEBHOOK" ]; then
+            echo "::error::Repository secret GOOGLE_CHAT_WEBHOOK is missing."
+            exit 1
+          fi
+          echo "Required secrets are present."
 
       - name: Install dependencies
         run: npm ci
@@ -37,11 +51,11 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Start app
+      - name: Start app and wait for readiness
         run: |
           npm run start &
           echo $! > .next.pid
-          npx wait-on http://localhost:3000 -t 60000
+          npx wait-on http://localhost:3000 -t 120000
 
       - name: Capture screenshot
         run: npm run capture
@@ -49,7 +63,7 @@ jobs:
       - name: Stop app
         if: always()
         run: |
-          if [ -f .next.pid ]; then kill $(cat .next.pid) || true; fi
+          if [ -f .next.pid ]; then kill "$(cat .next.pid)" || true; fi
 
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@v4

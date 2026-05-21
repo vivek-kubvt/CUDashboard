@@ -37,7 +37,7 @@ function sleep(ms: number) {
 }
 
 function cursorCookie(): string | null {
-  const token = process.env.CURSOR_SESSION_TOKEN;
+  const token = process.env.CURSOR_SESSION_TOKEN?.trim();
   if (!token) return null;
   // Allow either the raw token value or a full "name=value" cookie string.
   if (token.includes("=")) return token;

@@ -21,7 +21,19 @@ async function main() {
 
     await page.goto(TARGET, { waitUntil: "networkidle", timeout: 60_000 });
 
-    await page.waitForSelector("[data-dashboard-ready]", { timeout: 30_000 });
+    try {
+      await page.waitForSelector("[data-dashboard-ready]", { timeout: 60_000 });
+    } catch {
+      const errText = await page
+        .locator("main")
+        .innerText()
+        .catch(() => "");
+      throw new Error(
+        "Dashboard did not load in time. " +
+          "Check CURSOR_SESSION_TOKEN in GitHub secrets. " +
+          `Page snippet: ${errText.slice(0, 200)}`,
+      );
+    }
     // Wait for chart animations to settle.
     await page.waitForTimeout(1500);
 

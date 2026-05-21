@@ -34,8 +34,12 @@ export type GoogleChatPayload =
   | (GoogleChatTextMessage & Partial<GoogleChatCardMessage>);
 
 function webhookUrl(): string {
-  const url = process.env.GOOGLE_CHAT_WEBHOOK;
-  if (!url) throw new Error("GOOGLE_CHAT_WEBHOOK is not set.");
+  const url = process.env.GOOGLE_CHAT_WEBHOOK?.trim();
+  if (!url) {
+    throw new Error(
+      "GOOGLE_CHAT_WEBHOOK is not set. Add it as a GitHub Actions repository secret.",
+    );
+  }
   return url;
 }
 
@@ -157,5 +161,13 @@ export async function sendUsageReport(
 ): Promise<void> {
   const text = buildUsageText(summary, user);
   const card = buildUsageCard(summary, user, screenshotUrl);
-  await sendGoogleChatMessage({ text, ...card });
+  try {
+    await sendGoogleChatMessage({ text, ...card });
+  } catch (err) {
+    console.warn(
+      "[report] Card payload failed, retrying text-only:",
+      (err as Error).message,
+    );
+    await sendGoogleChatMessage({ text });
+  }
 }
