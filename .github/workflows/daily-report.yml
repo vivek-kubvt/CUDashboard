@@ -75,7 +75,6 @@ jobs:
 
       - name: Publish screenshot for Google Chat
         id: publish_screenshot
-        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -83,12 +82,15 @@ jobs:
             echo "::error::public/usage-report.png is missing after capture."
             exit 1
           fi
-          if URL=$(npx tsx scripts/publishScreenshot.ts); then
+          if [ -n "${{ secrets.SCREENSHOT_URL }}" ]; then
+            echo "SCREENSHOT_URL=${{ secrets.SCREENSHOT_URL }}" >> "$GITHUB_ENV"
+            echo "Using SCREENSHOT_URL from repository secret."
+          elif URL=$(npx tsx scripts/publishScreenshot.ts); then
             echo "SCREENSHOT_URL=$URL" >> "$GITHUB_ENV"
             echo "Published dashboard image: $URL"
           else
-            echo "::warning::Could not upload screenshot for Google Chat embed. Report will be text-only; download the workflow artifact for the full PNG."
-            echo "SCREENSHOT_URL=" >> "$GITHUB_ENV"
+            echo "::error::Could not publish a public screenshot URL. Google Chat will not be notified (screenshot-only mode)."
+            exit 1
           fi
 
       - name: Send report to Google Chat

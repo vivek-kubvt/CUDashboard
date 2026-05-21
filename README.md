@@ -30,7 +30,7 @@ All three are hit through `lib/fetchUsage.ts`, which sends a `Cookie: WorkosCurs
 - Auto-refresh every 5 minutes + manual refresh
 - Export JSON / download full-dashboard PNG (Playwright, same as CI)
 - Playwright screenshot → PNG artifact
-- Google Chat webhook integration (plain text + rich `cardsV2` card)
+- Google Chat webhook posts **only the full dashboard screenshot** (no text summary)
 - GitHub Actions: **19:00 IST, Monday–Friday only** (weekends excluded)
 - Mobile responsive, glassmorphism cards, gradient accents
 
@@ -137,12 +137,12 @@ npm run daily-report           # capture + send
 ├── hooks/useUsage.ts             # client hook: fetch, refresh, auto-poll
 ├── lib/
 │   ├── fetchUsage.ts             # Cursor API client (3 endpoints) with retries, timeout, validation
-│   ├── googleChat.ts             # webhook payload builders + sender
+│   ├── googleChat.ts             # screenshot-only Google Chat card
 │   ├── mockData.ts               # sample summary / auth-me / usage-detail
 │   └── utils.ts
 ├── scripts/
 │   ├── capture.ts                # Playwright screenshot of dashboard
-│   └── sendReport.ts             # posts text + card to Google Chat
+│   └── sendReport.ts             # posts dashboard PNG to Google Chat
 ├── types/usage.ts                # types matching the Cursor JSON responses
 ├── .github/workflows/daily-report.yml
 ├── .env.example
@@ -175,9 +175,11 @@ Each run:
 2. Builds and starts the Next.js app
 3. Captures `usage-report.png`
 4. Uploads it as a workflow artifact (14 day retention)
-5. Sends the report to Google Chat
+5. Publishes a public image URL and sends **only that screenshot** to Google Chat (no usage text)
 
-In GitHub Actions, the workflow commits `usage-report.png` to the `dashboard-screenshot` branch and uses the `raw.githubusercontent.com` URL for Google Chat (reliable; no third-party upload). Locally it tries `transfer.sh` / `0x0.st` / `litterbox`. If upload fails, the report is still sent as text and the PNG stays in the workflow **artifact**. You can also set `SCREENSHOT_URL` manually before `npm run report`.
+**Google Chat = screenshot only**
+
+The group message is a single card with the dashboard PNG — no usage percentages or account lines. `SCREENSHOT_URL` must be publicly reachable (Google cannot load private `raw.githubusercontent.com` links). **Public repos:** the workflow commits to `dashboard-screenshot` and uses GitHub’s `download_url`. **Private repos:** set a `SCREENSHOT_URL` repository secret (Cloudinary/S3/R2). The full PNG is always in the workflow **artifact** if you need a backup.
 
 ---
 
@@ -208,7 +210,7 @@ In GitHub Actions, the workflow commits `usage-report.png` to the `dashboard-scr
 | `npm run format` | Prettier write |
 | `npm run capture` | Playwright screenshot → `public/usage-report.png` |
 | `npm run publish-screenshot` | Upload PNG and print public URL (for `SCREENSHOT_URL`) |
-| `npm run report` | Post usage report to Google Chat |
+| `npm run report` | Post dashboard screenshot to Google Chat |
 | `npm run daily-report` | Capture + report in sequence |
 
 ---

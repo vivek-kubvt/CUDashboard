@@ -1,8 +1,23 @@
+import { isPublicImageUrl } from "@/lib/verifyImageUrl";
+
 const USER_AGENT = "cursor-usage-dashboard/1.0";
 const SCREENSHOT_BRANCH =
   process.env.SCREENSHOT_GIT_BRANCH?.trim() || "dashboard-screenshot";
 
 type UploadFn = (bytes: Buffer, filename: string) => Promise<string>;
+
+async function isPrivateGitHubRepo(
+  token: string,
+  owner: string,
+  name: string,
+): Promise<boolean> {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${name}`, {
+    headers: githubHeaders(token),
+  });
+  if (!res.ok) return true;
+  const meta = (await res.json()) as { private?: boolean };
+  return meta.private === true;
+}
 
 function githubHeaders(token: string): HeadersInit {
   return {
@@ -109,7 +124,14 @@ async function uploadGitHubRaw(bytes: Buffer, filename: string): Promise<string>
     throw new Error(`GitHub write failed (${put.status}): ${body.slice(0, 200)}`);
   }
 
-  return `https://raw.githubusercontent.com/${owner}/${name}/refs/heads/${SCREENSHOT_BRANCH}/${filename}`;
+  const payload = (await put.json()) as {
+    content?: { download_url?: string };
+  };
+  const downloadUrl = payload.content?.download_url?.trim();
+  if (!downloadUrl) {
+    throw new Error("GitHub response missing content.download_url");
+  }
+  return downloadUrl;
 }
 
 async function uploadTransferSh(bytes: Buffer, filename: string): Promise<string> {
@@ -177,20 +199,29 @@ async function uploadLitterbox(bytes: Buffer, filename: string): Promise<string>
   return url;
 }
 
-function uploaders(): Array<{ name: string; upload: UploadFn }> {
-  const list: Array<{ name: string; upload: UploadFn }> = [];
-
-  if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPOSITORY) {
-    list.push({ name: "github-raw", upload: uploadGitHubRaw });
-  }
-
-  list.push(
+async function buildUploaders(): Promise<Array<{ name: string; upload: UploadFn }>> {
+  const external: Array<{ name: string; upload: UploadFn }> = [
     { name: "transfer.sh", upload: uploadTransferSh },
     { name: "0x0.st", upload: upload0x0 },
     { name: "litterbox", upload: uploadLitterbox },
-  );
+  ];
 
-  return list;
+  const token = process.env.GITHUB_TOKEN?.trim();
+  const repo = process.env.GITHUB_REPOSITORY?.trim();
+  if (!token || !repo) return external;
+
+  const [owner, name] = repo.split("/");
+  if (!owner || !name) return external;
+
+  const isPrivate = await isPrivateGitHubRepo(token, owner, name);
+  if (isPrivate) {
+    console.error(
+      "[publish] Repository is private — GitHub raw URLs cannot be embedded in Google Chat. Trying external hosts…",
+    );
+    return external;
+  }
+
+  return [{ name: "github-raw", upload: uploadGitHubRaw }, ...external];
 }
 
 /**
@@ -203,10 +234,13 @@ export async function publishScreenshotUrl(
 ): Promise<string> {
   const errors: string[] = [];
 
-  for (const { name, upload } of uploaders()) {
+  for (const { name, upload } of await buildUploaders()) {
     try {
       const url = await upload(bytes, filename);
-      console.error(`[publish] Uploaded via ${name}`);
+      if (!(await isPublicImageUrl(url))) {
+        throw new Error("URL is not publicly reachable (Google Chat cannot load it)");
+      }
+      console.error(`[publish] Uploaded via ${name} (verified public)`);
       return url;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

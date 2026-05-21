@@ -24,8 +24,7 @@ export async function captureDashboardScreenshot(
   try {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
-      // CI: 1x keeps PNG smaller for upload hosts; local/dev uses 2x for crisp PNG button.
-      deviceScaleFactor: process.env.CI === "true" ? 1 : 2,
+      deviceScaleFactor: 2,
       colorScheme: "dark",
     });
     const page = await context.newPage();
@@ -46,8 +45,8 @@ export async function captureDashboardScreenshot(
       );
     }
 
-    // Let Recharts finish layout/animation.
-    await page.waitForTimeout(2000);
+    // Let Recharts finish layout/animation (CI headless can be slower).
+    await page.waitForTimeout(process.env.CI === "true" ? 3500 : 2000);
 
     const root = page.locator("#dashboard-root");
     const scrollHeight = await root.evaluate((el) => el.scrollHeight);
