@@ -24,7 +24,8 @@ export async function captureDashboardScreenshot(
   try {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
-      deviceScaleFactor: 2,
+      // CI: 1x keeps PNG smaller for upload hosts; local/dev uses 2x for crisp PNG button.
+      deviceScaleFactor: process.env.CI === "true" ? 1 : 2,
       colorScheme: "dark",
     });
     const page = await context.newPage();

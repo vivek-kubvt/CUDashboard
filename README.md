@@ -177,7 +177,7 @@ Each run:
 4. Uploads it as a workflow artifact (14 day retention)
 5. Sends the report to Google Chat
 
-The workflow uploads `usage-report.png` to a temporary public host and sets `SCREENSHOT_URL` automatically so Google Chat shows the **full dashboard image** at the top of the card. You can also set `SCREENSHOT_URL` manually (e.g. S3 / Cloudinary / R2) before `npm run report`.
+In GitHub Actions, the workflow commits `usage-report.png` to the `dashboard-screenshot` branch and uses the `raw.githubusercontent.com` URL for Google Chat (reliable; no third-party upload). Locally it tries `transfer.sh` / `0x0.st` / `litterbox`. If upload fails, the report is still sent as text and the PNG stays in the workflow **artifact**. You can also set `SCREENSHOT_URL` manually before `npm run report`.
 
 ---
 

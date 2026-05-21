@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -75,14 +75,21 @@ jobs:
 
       - name: Publish screenshot for Google Chat
         id: publish_screenshot
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ ! -f public/usage-report.png ]; then
             echo "::error::public/usage-report.png is missing after capture."
             exit 1
           fi
-          URL=$(npx tsx scripts/publishScreenshot.ts)
-          echo "SCREENSHOT_URL=$URL" >> "$GITHUB_ENV"
-          echo "Published dashboard image: $URL"
+          if URL=$(npx tsx scripts/publishScreenshot.ts); then
+            echo "SCREENSHOT_URL=$URL" >> "$GITHUB_ENV"
+            echo "Published dashboard image: $URL"
+          else
+            echo "::warning::Could not upload screenshot for Google Chat embed. Report will be text-only; download the workflow artifact for the full PNG."
+            echo "SCREENSHOT_URL=" >> "$GITHUB_ENV"
+          fi
 
       - name: Send report to Google Chat
         env:
