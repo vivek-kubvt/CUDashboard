@@ -1,0 +1,63 @@
+name: Cursor Usage Report
+
+on:
+  schedule:
+    # 19:00 IST Mon–Fri = 13:30 UTC Mon–Fri (IST = UTC+5:30, weekends excluded)
+    - cron: "30 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CURSOR_SESSION_TOKEN: ${{ secrets.CURSOR_SESSION_TOKEN }}
+      CURSOR_USER_ID: ${{ secrets.CURSOR_USER_ID }}
+      GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        run: npm run build
+
+      - name: Start app
+        run: |
+          npm run start &
+          echo $! > .next.pid
+          npx wait-on http://localhost:3000 -t 60000
+
+      - name: Capture screenshot
+        run: npm run capture
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f .next.pid ]; then kill $(cat .next.pid) || true; fi
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cursor-usage-report
+          path: public/usage-report.png
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Send report to Google Chat
+        run: npm run report
