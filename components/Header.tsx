@@ -76,7 +76,7 @@ export function Header({
             className={`h-4 w-4 ${pngLoading ? "animate-pulse" : ""}`}
           />
           <span className="hidden sm:inline">
-            {pngLoading ? "Saving…" : "PNG"}
+            {pngLoading ? "Capturing…" : "PNG"}
           </span>
         </Button>
         <Button

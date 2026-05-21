@@ -90,6 +90,16 @@ export function buildUsageCard(
   const remaining = Math.max(0, p.breakdown.total - p.used);
 
   const widgets: Array<Record<string, unknown>> = [];
+
+  if (screenshotUrl) {
+    widgets.push({
+      image: {
+        imageUrl: screenshotUrl,
+        altText: "Full Cursor usage dashboard",
+      },
+    });
+  }
+
   if (user) {
     widgets.push({
       decoratedText: {
@@ -133,10 +143,6 @@ export function buildUsageCard(
       },
     },
   );
-
-  if (screenshotUrl) {
-    widgets.push({ image: { imageUrl: screenshotUrl, altText: "Usage dashboard" } });
-  }
 
   return {
     cardsV2: [

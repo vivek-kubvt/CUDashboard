@@ -28,7 +28,7 @@ All three are hit through `lib/fetchUsage.ts`, which sends a `Cookie: WorkosCurs
 - Logged-in account shown in header (name + email from `/api/auth/me`)
 - `/api/usage` server route with retries, timeout, schema validation, mock fallback in dev
 - Auto-refresh every 5 minutes + manual refresh
-- Export JSON / open PNG snapshot
+- Export JSON / download full-dashboard PNG (Playwright, same as CI)
 - Playwright screenshot → PNG artifact
 - Google Chat webhook integration (plain text + rich `cardsV2` card)
 - GitHub Actions: **19:00 IST, Monday–Friday only** (weekends excluded)
@@ -177,7 +177,7 @@ Each run:
 4. Uploads it as a workflow artifact (14 day retention)
 5. Sends the report to Google Chat
 
-To embed the PNG inside the chat card, upload it to S3 / Cloudinary / R2 first and export `SCREENSHOT_URL` before the `Send report` step — `scripts/sendReport.ts` will pass it into the card.
+The workflow uploads `usage-report.png` to a temporary public host and sets `SCREENSHOT_URL` automatically so Google Chat shows the **full dashboard image** at the top of the card. You can also set `SCREENSHOT_URL` manually (e.g. S3 / Cloudinary / R2) before `npm run report`.
 
 ---
 
@@ -206,7 +206,8 @@ To embed the PNG inside the chat card, upload it to S3 / Cloudinary / R2 first a
 | `npm run start` | Start production server |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier write |
-| `npm run capture` | Playwright screenshot → `usage-report.png` |
+| `npm run capture` | Playwright screenshot → `public/usage-report.png` |
+| `npm run publish-screenshot` | Upload PNG and print public URL (for `SCREENSHOT_URL`) |
 | `npm run report` | Post usage report to Google Chat |
 | `npm run daily-report` | Capture + report in sequence |
 
