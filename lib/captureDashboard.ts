@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { screenshotScale, screenshotWidth } from "@/lib/screenshotConfig";
 
 export interface CaptureDashboardOptions {
   baseUrl?: string;
@@ -20,11 +21,14 @@ export async function captureDashboardScreenshot(
   const target = options.baseUrl ?? dashboardBaseUrl();
   const outputPath = options.outputPath;
 
+  const width = screenshotWidth();
+  const scale = screenshotScale();
+
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
-      viewport: { width: 1440, height: 900 },
-      deviceScaleFactor: 2,
+      viewport: { width, height: 900 },
+      deviceScaleFactor: scale,
       colorScheme: "dark",
     });
     const page = await context.newPage();
@@ -50,11 +54,14 @@ export async function captureDashboardScreenshot(
 
     const root = page.locator("#dashboard-root");
     const scrollHeight = await root.evaluate((el) => el.scrollHeight);
-    const height = Math.min(Math.max(scrollHeight + 48, 900), 12_000);
-    await page.setViewportSize({ width: 1440, height });
+    const height = Math.min(Math.max(scrollHeight + 48, 900), 16_000);
+    await page.setViewportSize({ width, height });
     await page.waitForTimeout(400);
 
-    const buffer = await root.screenshot({ type: "png" });
+    const buffer = await root.screenshot({
+      type: "png",
+      animations: "disabled",
+    });
 
     if (outputPath) {
       const resolved = resolve(process.cwd(), outputPath);

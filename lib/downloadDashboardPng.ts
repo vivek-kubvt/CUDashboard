@@ -25,10 +25,10 @@ async function captureInBrowser(elementId: string): Promise<Blob> {
   }
 
   const dataUrl = await toPng(node, {
-    pixelRatio: 2,
+    pixelRatio: 3,
     cacheBust: true,
     backgroundColor: dashboardBackgroundColor(),
-    skipFonts: true,
+    skipFonts: false,
     filter: (el) => {
       if (!(el instanceof HTMLElement)) return true;
       return !el.classList.contains("recharts-tooltip-wrapper");
