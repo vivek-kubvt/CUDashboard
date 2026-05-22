@@ -40,6 +40,16 @@ export function formatDateTime(iso: string): string {
   });
 }
 
+/** Stable time label for SSR/client (avoids default locale hour12 mismatch). */
+export function formatTime(date: Date): string {
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
 export function membershipLabel(t: string): string {
   switch (t) {
     case "pro_plus":

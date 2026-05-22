@@ -3,6 +3,7 @@
 import { RefreshCw, Download, FileImage, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatTime } from "@/lib/utils";
 
 interface HeaderProps {
   lastUpdated: Date | null;
@@ -46,7 +47,7 @@ export function Header({
               </>
             ) : null}
             {lastUpdated
-              ? `Updated ${lastUpdated.toLocaleTimeString()}`
+              ? `Updated ${formatTime(lastUpdated)}`
               : "Awaiting first sync"}
           </p>
         </div>
