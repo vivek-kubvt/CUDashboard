@@ -1,6 +1,6 @@
 # Cursor Usage Dashboard
 
-A dark-mode dashboard for your **Cursor.com** usage: plan limits, token breakdown, charts, and recent activity. Data comes from your live Cursor session—no mock data when configured.
+A dark-mode dashboard for your **Cursor.com** usage: plan limits, token breakdown, charts, and recent activity. Data comes from your live Cursor session.
 
 Optional: scheduled screenshot + post to **Google Chat** (see [Daily report](#daily-report)).
 
@@ -13,7 +13,7 @@ Optional: scheduled screenshot + post to **Google Chat** (see [Daily report](#da
 ```bash
 git clone <your-repo-url> cursor-usage-dashboard
 cd cursor-usage-dashboard
-npm install
+npm install --legacy-peer-deps
 npx playwright install --with-deps chromium
 cp .env.example .env.local
 ```
