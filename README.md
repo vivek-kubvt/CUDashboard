@@ -76,7 +76,7 @@ Clones and forks do **not** auto-update. When a new version is published:
 
 1. On GitHub: **Watch** → **Custom** → enable **Releases** on [vivek-kubvt/CUDashboard](https://github.com/vivek-kubvt/CUDashboard).
 2. Read [Releases](https://github.com/vivek-kubvt/CUDashboard/releases) and [CHANGELOG.md](./CHANGELOG.md).
-3. Sync your copy from upstream:
+3. Sync **your** copy from this repo (read-only; you cannot push here unless you are a collaborator):
 
 ```bash
 git remote add upstream https://github.com/vivek-kubvt/CUDashboard.git   # once, if missing
@@ -84,7 +84,13 @@ git fetch upstream
 git merge upstream/main
 ```
 
-If you use a fork on GitHub, push after merging: `git push origin main`.
+If you use **your own fork** on GitHub (`origin` = your repo), push the merged result to **your** fork only:
+
+```bash
+git push origin main   # updates YOUR fork — not vivek-kubvt/CUDashboard
+```
+
+Local-only clones skip the push step; `merge upstream/main` on your machine is enough.
 
 After pulling, run `npm install --legacy-peer-deps` when `package-lock.json` changed. If `.github/workflows/` changed, re-check **Settings → Secrets → Actions** and run the workflow once manually.
 
