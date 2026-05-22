@@ -66,6 +66,30 @@ npm run daily-report
 
 For automated weekday runs, add `CURSOR_SESSION_TOKEN` and `GOOGLE_CHAT_WEBHOOK` as GitHub Actions secrets—the workflow in `.github/workflows/daily-report.yml` handles the rest.
 
+Schedule: **7:00 PM IST (GMT+05:30)**, Monday–Friday (`Asia/Kolkata` in the workflow).
+
+---
+
+## Staying up to date
+
+Clones and forks do **not** auto-update. When a new version is published:
+
+1. On GitHub: **Watch** → **Custom** → enable **Releases** on [vivek-kubvt/CUDashboard](https://github.com/vivek-kubvt/CUDashboard).
+2. Read [Releases](https://github.com/vivek-kubvt/CUDashboard/releases) and [CHANGELOG.md](./CHANGELOG.md).
+3. Sync your copy from upstream:
+
+```bash
+git remote add upstream https://github.com/vivek-kubvt/CUDashboard.git   # once, if missing
+git fetch upstream
+git merge upstream/main
+```
+
+If you use a fork on GitHub, push after merging: `git push origin main`.
+
+After pulling, run `npm install --legacy-peer-deps` when `package-lock.json` changed. If `.github/workflows/` changed, re-check **Settings → Secrets → Actions** and run the workflow once manually.
+
+Maintainers: see [.github/RELEASING.md](.github/RELEASING.md) for how to publish a release.
+
 ---
 
 ## License
