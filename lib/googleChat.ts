@@ -51,10 +51,16 @@ export async function sendGoogleChatMessage(
   }
 }
 
-/** Card with only the dashboard PNG — no title, stats, or plain-text body. */
+/** Card with dashboard image — tap image or button to open full size in browser. */
 export function buildScreenshotCard(
   screenshotUrl: string,
 ): GoogleChatCardMessage {
+  const openFullSize = {
+    openLink: {
+      url: screenshotUrl,
+    },
+  };
+
   return {
     cardsV2: [
       {
@@ -66,7 +72,19 @@ export function buildScreenshotCard(
                 {
                   image: {
                     imageUrl: screenshotUrl,
-                    altText: "Cursor usage dashboard",
+                    altText:
+                      "Cursor usage dashboard — tap to open full size",
+                    onClick: openFullSize,
+                  },
+                },
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "View full size",
+                        onClick: openFullSize,
+                      },
+                    ],
                   },
                 },
               ],

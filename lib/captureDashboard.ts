@@ -1,7 +1,14 @@
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { screenshotScale, screenshotWidth } from "@/lib/screenshotConfig";
+import {
+  screenshotFileName,
+  screenshotFormat,
+  screenshotJpegQuality,
+  screenshotMaxHeight,
+  screenshotScale,
+  screenshotWidth,
+} from "@/lib/screenshotConfig";
 
 export interface CaptureDashboardOptions {
   baseUrl?: string;
@@ -54,12 +61,17 @@ export async function captureDashboardScreenshot(
 
     const root = page.locator("#dashboard-root");
     const scrollHeight = await root.evaluate((el) => el.scrollHeight);
-    const height = Math.min(Math.max(scrollHeight + 48, 900), 16_000);
+    const height = Math.min(
+      Math.max(scrollHeight + 48, 900),
+      screenshotMaxHeight(),
+    );
     await page.setViewportSize({ width, height });
     await page.waitForTimeout(400);
 
+    const format = screenshotFormat();
     const buffer = await root.screenshot({
-      type: "png",
+      type: format === "jpeg" ? "jpeg" : "png",
+      quality: format === "jpeg" ? screenshotJpegQuality() : undefined,
       animations: "disabled",
     });
 
@@ -78,6 +90,6 @@ export async function captureDashboardScreenshot(
 export function defaultScreenshotPath(): string {
   return resolve(
     process.cwd(),
-    process.env.SCREENSHOT_PATH ?? "public/usage-report.png",
+    process.env.SCREENSHOT_PATH ?? `public/${screenshotFileName()}`,
   );
 }

@@ -25,7 +25,7 @@ async function captureInBrowser(elementId: string): Promise<Blob> {
   }
 
   const dataUrl = await toPng(node, {
-    pixelRatio: 3,
+    pixelRatio: 4,
     cacheBust: true,
     backgroundColor: dashboardBackgroundColor(),
     skipFonts: false,

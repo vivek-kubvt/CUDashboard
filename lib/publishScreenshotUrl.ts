@@ -4,7 +4,11 @@ const USER_AGENT = "cursor-usage-dashboard/1.0";
 const SCREENSHOT_BRANCH =
   process.env.SCREENSHOT_GIT_BRANCH?.trim() || "dashboard-screenshot";
 
-type UploadFn = (bytes: Buffer, filename: string) => Promise<string>;
+type UploadFn = (
+  bytes: Buffer,
+  filename: string,
+  contentType: string,
+) => Promise<string>;
 
 async function isPrivateGitHubRepo(
   token: string,
@@ -78,7 +82,11 @@ async function ensureScreenshotBranch(
 }
 
 /** Push PNG to a repo branch; Google Chat can load raw.githubusercontent.com URLs. */
-async function uploadGitHubRaw(bytes: Buffer, filename: string): Promise<string> {
+async function uploadGitHubRaw(
+  bytes: Buffer,
+  filename: string,
+  _contentType: string,
+): Promise<string> {
   const token = process.env.GITHUB_TOKEN?.trim();
   const repo = process.env.GITHUB_REPOSITORY?.trim();
   if (!token || !repo) {
@@ -134,13 +142,17 @@ async function uploadGitHubRaw(bytes: Buffer, filename: string): Promise<string>
   return downloadUrl;
 }
 
-async function uploadTransferSh(bytes: Buffer, filename: string): Promise<string> {
+async function uploadTransferSh(
+  bytes: Buffer,
+  filename: string,
+  contentType: string,
+): Promise<string> {
   const res = await fetch(`https://transfer.sh/${filename}`, {
     method: "PUT",
     body: new Uint8Array(bytes),
     headers: {
       "User-Agent": USER_AGENT,
-      "Content-Type": "image/png",
+      "Content-Type": contentType,
     },
   });
   if (!res.ok) {
@@ -153,9 +165,17 @@ async function uploadTransferSh(bytes: Buffer, filename: string): Promise<string
   return url;
 }
 
-async function upload0x0(bytes: Buffer, filename: string): Promise<string> {
+async function upload0x0(
+  bytes: Buffer,
+  filename: string,
+  contentType: string,
+): Promise<string> {
   const form = new FormData();
-  form.append("file", new Blob([new Uint8Array(bytes)], { type: "image/png" }), filename);
+  form.append(
+    "file",
+    new Blob([new Uint8Array(bytes)], { type: contentType }),
+    filename,
+  );
   const res = await fetch("https://0x0.st", {
     method: "POST",
     body: form,
@@ -171,12 +191,16 @@ async function upload0x0(bytes: Buffer, filename: string): Promise<string> {
   return url;
 }
 
-async function uploadLitterbox(bytes: Buffer, filename: string): Promise<string> {
+async function uploadLitterbox(
+  bytes: Buffer,
+  filename: string,
+  contentType: string,
+): Promise<string> {
   const form = new FormData();
   form.append("reqtype", "fileupload");
   form.append(
     "fileToUpload",
-    new Blob([new Uint8Array(bytes)], { type: "image/png" }),
+    new Blob([new Uint8Array(bytes)], { type: contentType }),
     filename,
   );
   form.append("time", "24h");
@@ -225,18 +249,19 @@ async function buildUploaders(): Promise<Array<{ name: string; upload: UploadFn 
 }
 
 /**
- * Upload PNG bytes to a temporary public HTTPS URL for Google Chat embeds.
+ * Upload image bytes to a temporary public HTTPS URL for Google Chat embeds.
  * Tries several hosts (catbox blocks many CI IPs with HTTP 412).
  */
 export async function publishScreenshotUrl(
   bytes: Buffer,
   filename = "usage-report.png",
+  contentType = "image/png",
 ): Promise<string> {
   const errors: string[] = [];
 
   for (const { name, upload } of await buildUploaders()) {
     try {
-      const url = await upload(bytes, filename);
+      const url = await upload(bytes, filename, contentType);
       if (!(await isPublicImageUrl(url))) {
         throw new Error("URL is not publicly reachable (Google Chat cannot load it)");
       }

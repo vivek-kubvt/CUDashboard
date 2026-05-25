@@ -66,6 +66,8 @@ npm run daily-report
 
 For automated weekday runs, add `CURSOR_SESSION_TOKEN` and `GOOGLE_CHAT_WEBHOOK` as GitHub Actions secrets—the workflow in `.github/workflows/daily-report.yml` handles the rest.
 
+Reports are captured at high resolution (2560px width, 4× device scale). In Google Chat, **tap the image** or **View full size** to open the full image in your browser (webhook cards do not use the same in-app fullscreen as manual photo uploads).
+
 Schedule: **7:00 PM IST (GMT+05:30)**, Monday–Friday (`Asia/Kolkata` in the workflow).
 
 ---
